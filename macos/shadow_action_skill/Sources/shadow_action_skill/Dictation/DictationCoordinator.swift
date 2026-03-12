@@ -43,6 +43,14 @@ final class DictationCoordinator {
     /// Seconds of mic-level silence before notifying Flutter.
     private static let micSilenceTimeoutSeconds: Double = 10.0
 
+    /// Number of RMS frames sampled at session start to estimate ambient noise floor (~0.5s at 60fps).
+    private static let calibrationFrameCount = 30
+    /// RMS margin added above the noise floor to set the speaking threshold.
+    private static let speakingMargin: Float = 0.10
+    /// Upper bound on the calibrated speaking threshold — prevents a noisy environment from
+    /// setting the threshold so high that speech never triggers the waveform.
+    private static let maxSpeakingThreshold: Float = 0.35
+
     /// Whether a dictation session is currently active.
     var isActive: Bool { asrService != nil }
 
@@ -60,67 +68,61 @@ final class DictationCoordinator {
     ///   - whisperModelName: Optional model filename override for the Whisper provider.
     /// - Throws: `DictationCoordinatorError` on validation failures, or underlying service errors.
     func start(providerName: String = "whisper", whisperModelName: String? = nil) async throws {
-        guard !isActive else {
-            throw DictationCoordinatorError.alreadyRunning
-        }
+        guard !isActive else { throw DictationCoordinatorError.alreadyRunning }
+        asrService = try await buildASRPipeline(provider: providerName, whisperModelName: whisperModelName)
+        showDictationWindow()
+        startRMSObserver()
+        startMicSilenceTimer()
+    }
 
-        // 1. Create ASR provider
-        guard let service = ASRServiceFactory.create(provider: providerName, whisperModelName: whisperModelName) else {
-            throw DictationCoordinatorError.unknownProvider(providerName)
-        }
-        self.asrService = service
+    // MARK: - Pipeline Setup (Private)
 
-        // 2. Prepare ASR model
+    private func buildASRPipeline(provider: String, whisperModelName: String?) async throws -> any ASRService {
+        guard let service = ASRServiceFactory.create(provider: provider, whisperModelName: whisperModelName) else {
+            throw DictationCoordinatorError.unknownProvider(provider)
+        }
         try await service.prepare()
-
-        // 3. Start audio capture
         try await audioCaptureService.start()
+        let transcriptionStream = try await service.startStreaming(audioBuffers: await audioCaptureService.bufferStream)
+        startTranscriptionForwarding(from: transcriptionStream)
+        return service
+    }
 
-        // 4. Pipe audio buffers into ASR
-        let transcriptionStream = try await service.startStreaming(
-            audioBuffers: await audioCaptureService.bufferStream
-        )
-
-        // 5. Forward transcription results to Flutter
+    private func startTranscriptionForwarding(from stream: AsyncStream<TranscriptionResult>) {
         logger.info("[DictationCoordinator] Pipeline started, listening for transcriptions...")
         transcriptionTask = Task { [logger] in
-            for await transcription in transcriptionStream {
+            for await transcription in stream {
                 logger.info("[DictationCoordinator] → Flutter: isFinal=\(transcription.isFinal), text=\"\(transcription.text)\"")
-                await FlutterBridge.shared.send("onTranscription", arguments: [
-                    "text": transcription.text,
-                    "isFinal": transcription.isFinal,
-                    "confidence": transcription.confidence,
-                    "segments": transcription.segments.map { segment in
-                        [
-                            "text": segment.text,
-                            "startTime": segment.startTime,
-                            "endTime": segment.endTime,
-                            "confidence": segment.confidence,
-                        ] as [String: Any]
-                    },
-                ] as [String: Any])
+                await FlutterBridge.shared.send("onTranscription", arguments: transcription.flutterPayload)
             }
             logger.info("[DictationCoordinator] Transcription stream ended")
         }
+    }
 
-        // 6. Show dictation window
-        showDictationWindow()
-
-        // 7. Wire RMS stream to viewmodel + detect mic silence
-        let rmsStream = await audioCaptureService.rmsStream
-        rmsTask = Task { [weak self] in
-            for await rms in rmsStream {
+    private func startRMSObserver() {
+        rmsTask = Task { [weak self, logger] in
+            var calibrationSamples: [Float] = []
+            var isCalibrated = false
+            for await rms in await audioCaptureService.rmsStream {
                 guard let self, !Task.isCancelled else { break }
                 WindowManager.shared.dictationViewModel?.rmsLevel = CGFloat(rms)
-
-                if rms > Self.micSilenceThreshold {
-                    self.resetMicSilenceTimer()
+                if !isCalibrated {
+                    calibrationSamples.append(rms)
+                    if calibrationSamples.count >= Self.calibrationFrameCount {
+                        self.calibrateSpeakingThreshold(from: calibrationSamples, logger: logger)
+                        isCalibrated = true
+                    }
                 }
+                if rms > Self.micSilenceThreshold { self.resetMicSilenceTimer() }
             }
         }
+    }
 
-        // 9. Start mic silence timer
-        startMicSilenceTimer()
+    private func calibrateSpeakingThreshold(from samples: [Float], logger: Logger) {
+        let noiseFloor = samples.reduce(0, +) / Float(samples.count)
+        let threshold = min(Self.maxSpeakingThreshold, noiseFloor + Self.speakingMargin)
+        WindowManager.shared.dictationViewModel?.speakingThreshold = CGFloat(threshold)
+        logger.info("[DictationCoordinator] Calibrated speakingThreshold=\(threshold) (noiseFloor=\(noiseFloor))")
     }
 
     /// Stop dictation: transition UI to thinking, tear down pipeline.

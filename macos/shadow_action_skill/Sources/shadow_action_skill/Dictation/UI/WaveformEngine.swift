@@ -151,8 +151,8 @@ enum LottieReferenceBars {
         )
     }
 
-    static let bars: [WaveformBar] = [
-        WaveformBar(
+    static let bars: [WaveformBar] = {
+        let bar1 = WaveformBar(
             id: 1,
             layerPosition: CGPoint(x: 15.125, y: 13.625),
             layerScaleY: 66.981,
@@ -163,8 +163,8 @@ enum LottieReferenceBars {
                 k(30, 90, inY: 1, outY: -0.859),
                 k(35, 70), k(40, 90),
             ]
-        ),
-        WaveformBar(
+        )
+        let bar2 = WaveformBar(
             id: 2,
             layerPosition: CGPoint(x: 22.562, y: 12.938),
             layerScaleY: 183.019,
@@ -175,8 +175,8 @@ enum LottieReferenceBars {
                 k(30, 80, inY: 1, outY: 0.282),
                 k(35, 90), k(40, 100),
             ]
-        ),
-        WaveformBar(
+        )
+        let bar3 = WaveformBar(
             id: 3,
             layerPosition: CGPoint(x: 30.188, y: 13.375),
             layerScaleY: 100.943,
@@ -187,8 +187,8 @@ enum LottieReferenceBars {
                 k(30, 70, inY: 1, outY: 0.215),
                 k(35, 150), k(40, 90),
             ]
-        ),
-        WaveformBar(
+        )
+        let bar4 = WaveformBar(
             id: 4,
             layerPosition: CGPoint(x: 37.312, y: 13.312),
             layerScaleY: 132.075,
@@ -199,6 +199,11 @@ enum LottieReferenceBars {
                 k(30, 70, inY: 1, outY: 0.282),
                 k(35, 80), k(40, 90),
             ]
-        ),
-    ]
+        )
+        // Bars 5–8 mirror bars 4–1 for a symmetric waveform
+        func mirrored(_ bar: WaveformBar, id: Int) -> WaveformBar {
+            WaveformBar(id: id, layerPosition: bar.layerPosition, layerScaleY: bar.layerScaleY, keyframes: bar.keyframes)
+        }
+        return [bar1, bar2, bar3, bar4, mirrored(bar4, id: 5), mirrored(bar3, id: 6), mirrored(bar2, id: 7), mirrored(bar1, id: 8)]
+    }()
 }

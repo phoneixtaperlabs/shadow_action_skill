@@ -41,6 +41,27 @@ struct TranscriptionResult: Sendable {
     }
 }
 
+// MARK: - Flutter Serialization
+
+extension TranscriptionResult {
+    /// Flutter channel payload for the `onTranscription` method call.
+    var flutterPayload: [String: Any] {
+        [
+            "text": text,
+            "isFinal": isFinal,
+            "confidence": confidence,
+            "segments": segments.map { segment in
+                [
+                    "text": segment.text,
+                    "startTime": segment.startTime,
+                    "endTime": segment.endTime,
+                    "confidence": segment.confidence,
+                ] as [String: Any]
+            },
+        ]
+    }
+}
+
 // MARK: - TranscriptionSegment
 
 /// A time-aligned segment (word or token) within a transcription result.

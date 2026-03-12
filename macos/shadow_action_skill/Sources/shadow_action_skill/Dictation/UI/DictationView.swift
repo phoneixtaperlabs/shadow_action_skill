@@ -23,7 +23,7 @@ struct DictationView: View {
                 .clipped()
 
             ZStack {
-                DictationIndicatorView(rmsLevel: viewModel.rmsLevel)
+                DictationIndicatorView(rmsLevel: viewModel.rmsLevel, speakingThreshold: viewModel.speakingThreshold)
                     .opacity(isListening ? 1 : 0)
                 ThinkingLabel()
                     .opacity(isListening ? 0 : 1)

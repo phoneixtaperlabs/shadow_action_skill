@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - DictationIndicatorView
 
-/// Displays 4 bars that morph between static dots (silent) and animated waveform bars (speaking).
+/// Displays 8 bars that morph between static dots (silent) and animated waveform bars (speaking).
 ///
 /// Receives only `rmsLevel` — narrow dependency avoids unnecessary redraws
 /// from unrelated viewmodel changes. (Coupling)
@@ -11,14 +11,15 @@ struct DictationIndicatorView: View {
     /// Microphone RMS level (0.0 = silent, 1.0 = loud).
     let rmsLevel: CGFloat
 
+    /// Calibrated threshold above which the waveform animates. Passed from DictationViewModel.
+    let speakingThreshold: CGFloat
+
     // MARK: - Configuration
 
     private let preset = WaveformPreset.lottieReference()
-    private let barWidth: CGFloat = 3
-    private let barSpacing: CGFloat = 4
-    private let barCount = 4
-    private let maxBarHeight: CGFloat = 20
-    private let speakingThreshold: CGFloat = 0.02
+    fileprivate static let barWidth: CGFloat = 3
+    fileprivate static let barSpacing: CGFloat = 4
+    fileprivate static let maxBarHeight: CGFloat = 20
     /// How long to keep bars alive after RMS drops below threshold.
     /// Bridges natural speech pauses (~200-400ms between words).
     private let holdoverDuration: TimeInterval = 0.35
@@ -38,32 +39,14 @@ struct DictationIndicatorView: View {
             let frame = (elapsed * preset.sourceFPS)
                 .truncatingRemainder(dividingBy: preset.loopFrames)
 
-            HStack(spacing: barSpacing) {
+            HStack(spacing: Self.barSpacing) {
                 ForEach(preset.bars) { bar in
-                    let animatedScaleY = WaveformInterpolator.value(
-                        at: frame,
-                        in: bar.keyframes
+                    WaveformBarView(
+                        bar: bar,
+                        frame: frame,
+                        rmsLevel: rmsLevel,
+                        morphProgress: morphProgress
                     )
-
-                    // Animated bar height = keyframe value × layer scale × RMS amplitude
-                    // rmsLevel is already perceptually normalized (0–1) by AudioCaptureService
-                    let normalizedScale = (animatedScaleY / 100.0) * (bar.layerScaleY / 100.0)
-                    let rmsAmplitude = max(0.3, min(1.0, rmsLevel))
-                    let animatedHeight = min(maxBarHeight, maxBarHeight * normalizedScale * rmsAmplitude)
-
-                    // Dot height = bar width (perfect circle)
-                    let dotHeight = barWidth
-
-                    // Morph: lerp between dot and bar based on morphProgress
-                    let displayHeight = WaveformInterpolator.lerp(
-                        dotHeight,
-                        animatedHeight,
-                        t: morphProgress
-                    )
-
-                    RoundedRectangle(cornerRadius: barWidth / 2, style: .continuous)
-                        .fill(Color.brandSecondary)
-                        .frame(width: barWidth, height: max(barWidth, displayHeight))
                 }
             }
         }
@@ -96,5 +79,35 @@ struct DictationIndicatorView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - WaveformBarView
+
+/// Renders a single waveform bar. Extracted so SwiftUI can diff each bar independently. (Performance)
+private struct WaveformBarView: View {
+    let bar: WaveformBar
+    let frame: Double
+    let rmsLevel: CGFloat
+    let morphProgress: CGFloat
+
+    var body: some View {
+        let animatedScaleY = WaveformInterpolator.value(at: frame, in: bar.keyframes)
+
+        // Animated bar height = keyframe value × layer scale × RMS amplitude
+        // rmsLevel is already perceptually normalized (0–1) by AudioCaptureService
+        let normalizedScale = (animatedScaleY / 100.0) * (bar.layerScaleY / 100.0)
+        let rmsAmplitude = max(0.3, min(1.0, rmsLevel))
+        let animatedHeight = min(DictationIndicatorView.maxBarHeight, DictationIndicatorView.maxBarHeight * normalizedScale * rmsAmplitude)
+
+        // Dot height = bar width (perfect circle)
+        let dotHeight = DictationIndicatorView.barWidth
+
+        // Morph: lerp between dot and bar based on morphProgress
+        let displayHeight = WaveformInterpolator.lerp(dotHeight, animatedHeight, t: morphProgress)
+
+        RoundedRectangle(cornerRadius: DictationIndicatorView.barWidth / 2, style: .continuous)
+            .fill(Color.brandSecondary)
+            .frame(width: DictationIndicatorView.barWidth, height: max(DictationIndicatorView.barWidth, displayHeight))
     }
 }

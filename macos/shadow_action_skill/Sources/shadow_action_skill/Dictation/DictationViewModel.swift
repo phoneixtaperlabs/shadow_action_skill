@@ -29,6 +29,10 @@ final class DictationViewModel {
     /// Drives the dots ↔ waveform morph in `DictationIndicatorView`.
     var rmsLevel: CGFloat = 0
 
+    /// Calibrated speaking threshold. Set by `DictationCoordinator` after sampling
+    /// ambient noise at session start. Defaults to 0.35 until calibration completes.
+    var speakingThreshold: CGFloat = 0.35
+
     /// Cancel the current dictation session — notifies Flutter to tear down the pipeline.
     func cancel() {
         FlutterBridge.shared.send("onDictationCancelled")
