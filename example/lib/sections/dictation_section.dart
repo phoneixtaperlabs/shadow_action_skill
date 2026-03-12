@@ -92,7 +92,7 @@ class _DictationSectionState extends State<DictationSection> {
         await _plugin.showDeviceNotification(deviceName);
       }
 
-      await _plugin.startDictation(const DictationConfig(asrProvider: AsrProvider.parakeet));
+      await _plugin.startDictation(const DictationConfig(whisperModel: WhisperModel.smallQ5_1));
       if (!mounted) return;
       setState(() {
         _dictationStatus = 'Dictation started.';

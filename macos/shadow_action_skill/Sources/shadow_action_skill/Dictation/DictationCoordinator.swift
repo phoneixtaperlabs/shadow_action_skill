@@ -55,15 +55,17 @@ final class DictationCoordinator {
 
     /// Start a dictation session: create ASR, start audio, wire streams, show UI.
     ///
-    /// - Parameter providerName: ASR provider identifier (e.g. "whisper").
+    /// - Parameters:
+    ///   - providerName: ASR provider identifier (e.g. "whisper").
+    ///   - whisperModelName: Optional model filename override for the Whisper provider.
     /// - Throws: `DictationCoordinatorError` on validation failures, or underlying service errors.
-    func start(providerName: String = "whisper") async throws {
+    func start(providerName: String = "whisper", whisperModelName: String? = nil) async throws {
         guard !isActive else {
             throw DictationCoordinatorError.alreadyRunning
         }
 
         // 1. Create ASR provider
-        guard let service = ASRServiceFactory.create(provider: providerName) else {
+        guard let service = ASRServiceFactory.create(provider: providerName, whisperModelName: whisperModelName) else {
             throw DictationCoordinatorError.unknownProvider(providerName)
         }
         self.asrService = service

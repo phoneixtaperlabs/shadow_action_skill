@@ -27,10 +27,12 @@ enum DictationMethodRouter {
         // MARK: Dictation Lifecycle
 
         case "startDictation":
-            let providerName = (call.arguments as? [String: Any])?["asrProvider"] as? String ?? "whisper"
+            let args = call.arguments as? [String: Any]
+            let providerName = args?["asrProvider"] as? String ?? "whisper"
+            let whisperModelName = args?["whisperModelName"] as? String
             Task {
                 do {
-                    try await coordinator.start(providerName: providerName)
+                    try await coordinator.start(providerName: providerName, whisperModelName: whisperModelName)
                     result(nil)
                 } catch {
                     result(flutterError(from: error))

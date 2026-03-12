@@ -1,3 +1,14 @@
+// MARK: - WhisperModel
+
+/// Known Whisper GGML model filenames. Mirrors the Dart `WhisperModel` enum.
+///
+/// Validated at the platform-channel boundary so invalid filenames fail fast
+/// in `ASRServiceFactory.create`, not deep in `WhisperService.prepare`. (Predictability)
+enum WhisperModel: String {
+    case smallQ5_1        = "ggml-small-q5_1.bin"
+    case largeV3TurboQ5_0 = "ggml-large-v3-turbo-q5_0.bin"
+}
+
 // MARK: - ASRServiceFactory
 
 /// Creates ASR service instances by provider name.
@@ -14,12 +25,21 @@ enum ASRServiceFactory {
 
     /// Create an ASR service for the given provider name.
     ///
-    /// - Parameter provider: Provider identifier (case-insensitive). Currently supported: "whisper", "parakeet".
-    /// - Returns: An `ASRService` instance, or `nil` if the provider is unknown.
-    static func create(provider: String) -> (any ASRService)? {
+    /// - Parameters:
+    ///   - provider: Provider identifier (case-insensitive). Currently supported: "whisper", "parakeet".
+    ///   - whisperModelName: Optional model filename override for the Whisper provider.
+    ///     Must match a known `WhisperModel` raw value; unknown values return `nil`.
+    ///     Nil uses `WhisperServiceConfig.default.modelName`.
+    /// - Returns: An `ASRService` instance, or `nil` if the provider or model name is unknown.
+    static func create(provider: String, whisperModelName: String? = nil) -> (any ASRService)? {
         switch provider.lowercased() {
         case "whisper":
-            return WhisperService()
+            var config = WhisperServiceConfig.default
+            if let name = whisperModelName {
+                guard let model = WhisperModel(rawValue: name) else { return nil }
+                config.modelName = model.rawValue
+            }
+            return WhisperService(config: config)
         case "parakeet":
             return ParakeetService()
         default:

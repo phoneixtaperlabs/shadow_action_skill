@@ -344,7 +344,7 @@ actor WhisperService: ASRService {
         logger: Logger
     ) -> TranscriptionResult? {
         // Use withCString to guarantee the language pointer lives through whisper_full.
-        let language = config.language ?? "en"
+        let language = config.language ?? "auto"
         return language.withCString { langPtr in
             var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
             params.n_threads = Int32(config.threadCount)
@@ -418,14 +418,14 @@ struct WhisperServiceConfig: Sendable {
     /// Sample rate whisper.cpp expects (Hz).
     static let sampleRate: Double = 16_000.0
 
-    /// Model filename (e.g., "ggml-large-v3-turbo-q5_0.bin").
-    let modelName: String
+    /// Model filename (e.g., "ggml-small-q5_1.bin").
+    var modelName: String
 
     /// Number of threads for inference.
     let threadCount: Int
 
     /// Language code (nil = auto-detect).
-    let language: String?
+    var language: String?
 
     /// Processing strategy.
     let strategy: WhisperProcessingStrategy
@@ -457,9 +457,9 @@ struct WhisperServiceConfig: Sendable {
     }
 
     static let `default` = WhisperServiceConfig(
-        modelName: "ggml-large-v3-turbo-q5_0.bin",
+        modelName: "ggml-small-q5_1.bin",
         threadCount: 4,
-        language: "en",
+        language: nil,
         strategy: .growingAccumulator,
         batchSizeSamples: Int(sampleRate) * 2,        // 2s (fixedBatch)
         stepSizeSamples: Int(sampleRate) * 2,          // run inference every 2s of new audio (growingAccumulator)
