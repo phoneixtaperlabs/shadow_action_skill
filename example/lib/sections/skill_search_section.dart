@@ -5,15 +5,22 @@ import 'package:flutter/services.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class SkillSearchSection extends StatefulWidget {
-  const SkillSearchSection({super.key});
+  const SkillSearchSection({
+    super.key,
+    required this.plugin,
+    required this.addHandler,
+    required this.removeHandler,
+  });
+
+  final ShadowActionSkill plugin;
+  final void Function(Future<dynamic> Function(MethodCall)) addHandler;
+  final void Function(Future<dynamic> Function(MethodCall)) removeHandler;
 
   @override
   State<SkillSearchSection> createState() => _SkillSearchSectionState();
 }
 
 class _SkillSearchSectionState extends State<SkillSearchSection> {
-  final _plugin = ShadowActionSkill();
-
   String _status = '';
   bool _isStatusError = false;
 
@@ -47,7 +54,13 @@ class _SkillSearchSectionState extends State<SkillSearchSection> {
   @override
   void initState() {
     super.initState();
-    _plugin.setNativeCallHandler(_handleNativeCall);
+    widget.addHandler(_handleNativeCall);
+  }
+
+  @override
+  void dispose() {
+    widget.removeHandler(_handleNativeCall);
+    super.dispose();
   }
 
   Future<dynamic> _handleNativeCall(MethodCall call) async {
@@ -90,7 +103,7 @@ class _SkillSearchSectionState extends State<SkillSearchSection> {
         const SkillSearchSkill(id: 'reminder', name: 'Set Reminder', icon: 'bell.fill', shortcut: '⇧⌘E'),
       ];
 
-      await _plugin.showSkillSearch(skills);
+      await widget.plugin.showSkillSearch(skills);
       _setStatus('SkillSearch shown');
     } on PlatformException catch (e) {
       _setStatus('Failed: ${e.message}', isError: true);
@@ -99,7 +112,7 @@ class _SkillSearchSectionState extends State<SkillSearchSection> {
 
   Future<void> _dismissSkillSearch() async {
     try {
-      await _plugin.dismissSkillSearch();
+      await widget.plugin.dismissSkillSearch();
       _setStatus('SkillSearch dismissed');
     } on PlatformException catch (e) {
       _setStatus('Failed: ${e.message}', isError: true);

@@ -5,15 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class ScreenshotSection extends StatefulWidget {
-  const ScreenshotSection({super.key});
+  const ScreenshotSection({super.key, required this.plugin});
+
+  final ShadowActionSkill plugin;
 
   @override
   State<ScreenshotSection> createState() => _ScreenshotSectionState();
 }
 
 class _ScreenshotSectionState extends State<ScreenshotSection> {
-  final _plugin = ShadowActionSkill();
-
   String _status = '';
   bool _isStatusError = false;
   String _screenshotPath = '';
@@ -35,13 +35,13 @@ class _ScreenshotSectionState extends State<ScreenshotSection> {
     });
     try {
       // Show glow overlay and capture screenshot simultaneously
-      final results = await Future.wait([_plugin.showGlowOverlay(), _plugin.captureScreenshot(quality: _quality)]);
+      final results = await Future.wait([widget.plugin.showGlowOverlay(), widget.plugin.captureScreenshot(quality: _quality)]);
       final screenshotResult = results[1] as Map<String, dynamic>;
 
       debugPrint("screenshotResult : $screenshotResult");
 
       // Dismiss glow overlay after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () => _plugin.dismissGlowOverlay());
+      Future.delayed(const Duration(seconds: 2), () => widget.plugin.dismissGlowOverlay());
 
       if (!mounted) return;
       setState(() {
@@ -51,7 +51,7 @@ class _ScreenshotSectionState extends State<ScreenshotSection> {
       });
       _setStatus('Screenshot captured.');
     } on PlatformException catch (e) {
-      _plugin.dismissGlowOverlay();
+      widget.plugin.dismissGlowOverlay();
       if (!mounted) return;
       setState(() {
         _isCapturing = false;

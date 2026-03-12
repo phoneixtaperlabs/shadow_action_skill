@@ -344,7 +344,7 @@ private struct ActionButton: View {
             HStack(spacing: 8) {
                 Text(label)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.text2)
+                    .foregroundStyle(Color.text3)
                     .lineLimit(1)
 
                 ShortcutKeyCaps(shortcut: shortcut)

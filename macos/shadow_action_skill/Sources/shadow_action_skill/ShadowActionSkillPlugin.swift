@@ -60,7 +60,8 @@ public class ShadowActionSkillPlugin: NSObject, FlutterPlugin {
       SkillSearchMethodRouter.handle(call, result: result)
 
     // MARK: SkillResult
-    case "showSkillResult", "dismissSkillResult":
+    case "showSkillResult", "dismissSkillResult",
+         "showCopyConfirmation", "dismissCopyConfirmation":
       SkillResultMethodRouter.handle(call, result: result)
 
     // MARK: Accessibility

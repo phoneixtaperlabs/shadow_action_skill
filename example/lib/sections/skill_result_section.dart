@@ -5,34 +5,57 @@ import 'package:flutter/services.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class SkillResultSection extends StatefulWidget {
-  const SkillResultSection({super.key});
+  const SkillResultSection({
+    super.key,
+    required this.plugin,
+    required this.addHandler,
+    required this.removeHandler,
+  });
+
+  final ShadowActionSkill plugin;
+  final void Function(Future<dynamic> Function(MethodCall)) addHandler;
+  final void Function(Future<dynamic> Function(MethodCall)) removeHandler;
 
   @override
   State<SkillResultSection> createState() => _SkillResultSectionState();
 }
 
 class _SkillResultSectionState extends State<SkillResultSection> {
-  final _plugin = ShadowActionSkill();
-
   String _status = '';
   bool _isStatusError = false;
 
   @override
   void initState() {
     super.initState();
-    _plugin.setNativeCallHandler(_handleNativeCall);
+    widget.addHandler(_handleNativeCall);
+  }
+
+  @override
+  void dispose() {
+    widget.removeHandler(_handleNativeCall);
+    super.dispose();
   }
 
   Future<dynamic> _handleNativeCall(MethodCall call) async {
+    debugPrint('[SkillResult] native call: ${call.method}, args: ${call.arguments}');
     if (!mounted) return;
     switch (call.method) {
       case 'onSkillResultAction':
         final args = call.arguments as Map<dynamic, dynamic>;
         final actionId = args['actionId'] as String?;
         final text = args['text'] as String?;
+        debugPrint('[SkillResult] actionId: $actionId, text: $text');
         _setStatus('Action: $actionId, text length: ${text?.length ?? 0}');
+        if (actionId == 'copyToClipboard') {
+          debugPrint('[SkillResult] Dismissing skill result and showing copy confirmation...');
+          await widget.plugin.dismissSkillResult();
+          await widget.plugin.showCopyConfirmation();
+          debugPrint('[SkillResult] Copy confirmation shown');
+        }
       case 'onSkillResultDismissed':
         _setStatus('SkillResult dismissed by user');
+      case 'onCopyConfirmationDismissed':
+        _setStatus('Copy confirmation dismissed');
     }
   }
 
@@ -69,7 +92,7 @@ class _SkillResultSectionState extends State<SkillResultSection> {
       final screenBytes = await _renderIconToBytes(Icons.desktop_mac, size: 16);
       final cursorBytes = await _renderIconToBytes(Icons.mouse, size: 16);
 
-      await _plugin.showSkillResult(
+      await widget.plugin.showSkillResult(
         SkillResult(
           name: 'Dictation',
           icon: 'mic',
@@ -93,7 +116,7 @@ class _SkillResultSectionState extends State<SkillResultSection> {
 
   Future<void> _dismissSkillResult() async {
     try {
-      await _plugin.dismissSkillResult();
+      await widget.plugin.dismissSkillResult();
       _setStatus('SkillResult dismissed');
     } on PlatformException catch (e) {
       _setStatus('Failed: ${e.message}', isError: true);

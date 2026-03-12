@@ -5,7 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class DictationSection extends StatefulWidget {
-  const DictationSection({super.key});
+  const DictationSection({
+    super.key,
+    required this.plugin,
+    required this.addHandler,
+    required this.removeHandler,
+  });
+
+  final ShadowActionSkill plugin;
+  final void Function(Future<dynamic> Function(MethodCall)) addHandler;
+  final void Function(Future<dynamic> Function(MethodCall)) removeHandler;
 
   @override
   State<DictationSection> createState() => _DictationSectionState();
@@ -14,17 +23,16 @@ class DictationSection extends StatefulWidget {
 class _DictationSectionState extends State<DictationSection> {
   String _dictationStatus = '';
   String _transcriptionText = '';
-  final _plugin = ShadowActionSkill();
 
   @override
   void initState() {
     super.initState();
-    _plugin.setNativeCallHandler(_handleNativeCall);
+    widget.addHandler(_handleNativeCall);
   }
 
   @override
   void dispose() {
-    _plugin.setNativeCallHandler(null);
+    widget.removeHandler(_handleNativeCall);
     super.dispose();
   }
 
@@ -59,21 +67,21 @@ class _DictationSectionState extends State<DictationSection> {
         setState(() {
           _dictationStatus = 'No speech detected.';
         });
-        await _plugin.dismissDictationView();
-        await _plugin.showDictationFail();
-        await _plugin.stopDictation();
-        await _plugin.restoreSystemVolume();
+        await widget.plugin.dismissDictationView();
+        await widget.plugin.showDictationFail();
+        await widget.plugin.stopDictation();
+        await widget.plugin.restoreSystemVolume();
       case 'onSelectMicrophoneTapped':
         debugPrint('[Dictation] User tapped Select microphone');
-        await _plugin.dismissDictationFail();
-        await _plugin.showAudioDeviceSelect();
+        await widget.plugin.dismissDictationFail();
+        await widget.plugin.showAudioDeviceSelect();
       case 'onDictationFailDismissed':
         debugPrint('[Dictation] User dismissed fail view');
-        await _plugin.dismissDictationFail();
+        await widget.plugin.dismissDictationFail();
 
       case 'onAudioDeviceSelectDismissed':
         debugPrint('[Dication] User dismissed Audio Device Select view');
-        await _plugin.dismissAudioDeviceSelect();
+        await widget.plugin.dismissAudioDeviceSelect();
     }
   }
 
@@ -84,15 +92,15 @@ class _DictationSectionState extends State<DictationSection> {
       });
 
       // Mute system output to prevent speaker feedback during dictation.
-      await _plugin.muteSystemOutput();
+      await widget.plugin.muteSystemOutput();
 
       // Get the default input device name and show a notification.
-      final deviceName = await _plugin.getDefaultInputDeviceName();
+      final deviceName = await widget.plugin.getDefaultInputDeviceName();
       if (deviceName != null) {
-        await _plugin.showDeviceNotification(deviceName);
+        await widget.plugin.showDeviceNotification(deviceName);
       }
 
-      await _plugin.startDictation(const DictationConfig(whisperModel: WhisperModel.smallQ5_1));
+      await widget.plugin.startDictation(const DictationConfig(whisperModel: WhisperModel.smallQ5_1));
       if (!mounted) return;
       setState(() {
         _dictationStatus = 'Dictation started.';
@@ -100,7 +108,7 @@ class _DictationSectionState extends State<DictationSection> {
     } on PlatformException catch (e) {
       // Restore volume if start fails partway through.
       try {
-        await _plugin.restoreSystemVolume();
+        await widget.plugin.restoreSystemVolume();
       } catch (_) {}
       if (!mounted) return;
       setState(() {
@@ -111,9 +119,9 @@ class _DictationSectionState extends State<DictationSection> {
 
   Future<void> _stopDictation() async {
     try {
-      await _plugin.stopDictation();
+      await widget.plugin.stopDictation();
       // Restore volume after dictation stops (safety net also restores on native side).
-      await _plugin.restoreSystemVolume();
+      await widget.plugin.restoreSystemVolume();
       if (!mounted) return;
       setState(() {
         _dictationStatus = 'Dictation stopped.';
@@ -128,7 +136,7 @@ class _DictationSectionState extends State<DictationSection> {
 
   Future<void> _dismissDictationView() async {
     try {
-      await _plugin.dismissDictationView();
+      await widget.plugin.dismissDictationView();
       if (!mounted) return;
       setState(() {
         _dictationStatus = 'Dictation view dismissed.';
@@ -157,25 +165,25 @@ class _DictationSectionState extends State<DictationSection> {
             ElevatedButton(onPressed: _dismissDictationView, child: const Text('Dismiss Dictation View')),
             ElevatedButton(
               onPressed: () async {
-                await _plugin.showDictationFail();
+                await widget.plugin.showDictationFail();
               },
               child: const Text('Show Dictation Fail'),
             ),
             ElevatedButton(
               onPressed: () async {
-                await _plugin.dismissDictationFail();
+                await widget.plugin.dismissDictationFail();
               },
               child: const Text('Dismiss Dictation Fail'),
             ),
             ElevatedButton(
               onPressed: () async {
-                await _plugin.showAudioDeviceSelect();
+                await widget.plugin.showAudioDeviceSelect();
               },
               child: const Text('Show Audio Device Select'),
             ),
             ElevatedButton(
               onPressed: () async {
-                await _plugin.dismissAudioDeviceSelect();
+                await widget.plugin.dismissAudioDeviceSelect();
               },
               child: const Text('Dismiss Audio Device Select'),
             ),

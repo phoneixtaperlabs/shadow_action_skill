@@ -5,22 +5,35 @@ import 'package:flutter/services.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class QuickAccessSection extends StatefulWidget {
-  const QuickAccessSection({super.key});
+  const QuickAccessSection({
+    super.key,
+    required this.plugin,
+    required this.addHandler,
+    required this.removeHandler,
+  });
+
+  final ShadowActionSkill plugin;
+  final void Function(Future<dynamic> Function(MethodCall)) addHandler;
+  final void Function(Future<dynamic> Function(MethodCall)) removeHandler;
 
   @override
   State<QuickAccessSection> createState() => _QuickAccessSectionState();
 }
 
 class _QuickAccessSectionState extends State<QuickAccessSection> {
-  final _plugin = ShadowActionSkill();
-
   String _status = '';
   bool _isStatusError = false;
 
   @override
   void initState() {
     super.initState();
-    _plugin.setNativeCallHandler(_handleNativeCall);
+    widget.addHandler(_handleNativeCall);
+  }
+
+  @override
+  void dispose() {
+    widget.removeHandler(_handleNativeCall);
+    super.dispose();
   }
 
   Future<dynamic> _handleNativeCall(MethodCall call) async {
@@ -81,7 +94,7 @@ class _QuickAccessSectionState extends State<QuickAccessSection> {
         QuickAccessSkill(id: 'ai_assist', name: 'Polish my write', key: 'E', icon: 'sparkles', iconBytes: sparkleBytes),
       ];
 
-      await _plugin.showQuickAccess(skills);
+      await widget.plugin.showQuickAccess(skills);
       _setStatus('QuickAccess shown');
     } on PlatformException catch (e) {
       _setStatus('Failed: ${e.message}', isError: true);
@@ -90,7 +103,7 @@ class _QuickAccessSectionState extends State<QuickAccessSection> {
 
   Future<void> _dismissQuickAccess() async {
     try {
-      await _plugin.dismissQuickAccess();
+      await widget.plugin.dismissQuickAccess();
       _setStatus('QuickAccess dismissed');
     } on PlatformException catch (e) {
       _setStatus('Failed: ${e.message}', isError: true);

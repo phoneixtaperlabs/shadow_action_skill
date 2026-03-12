@@ -110,6 +110,14 @@ abstract class ShadowActionSkillPlatform extends PlatformInterface {
     throw UnimplementedError('dismissSkillResult() has not been implemented.');
   }
 
+  Future<void> showCopyConfirmation() {
+    throw UnimplementedError('showCopyConfirmation() has not been implemented.');
+  }
+
+  Future<void> dismissCopyConfirmation() {
+    throw UnimplementedError('dismissCopyConfirmation() has not been implemented.');
+  }
+
   Future<void> muteSystemOutput() {
     throw UnimplementedError('muteSystemOutput() has not been implemented.');
   }

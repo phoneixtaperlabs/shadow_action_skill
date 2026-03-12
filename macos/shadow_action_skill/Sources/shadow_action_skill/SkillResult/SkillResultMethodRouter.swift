@@ -28,6 +28,14 @@ enum SkillResultMethodRouter {
             SkillResultView.dismissWindow()
             result(nil)
 
+        case "showCopyConfirmation":
+            CopyConfirmationView.showWindow()
+            result(nil)
+
+        case "dismissCopyConfirmation":
+            CopyConfirmationView.dismissWindow()
+            result(nil)
+
         default:
             result(FlutterMethodNotImplemented)
         }

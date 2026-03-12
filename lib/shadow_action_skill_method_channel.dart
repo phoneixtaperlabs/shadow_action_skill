@@ -130,6 +130,16 @@ class MethodChannelShadowActionSkill extends ShadowActionSkillPlatform {
   }
 
   @override
+  Future<void> showCopyConfirmation() async {
+    await methodChannel.invokeMethod<void>('showCopyConfirmation');
+  }
+
+  @override
+  Future<void> dismissCopyConfirmation() async {
+    await methodChannel.invokeMethod<void>('dismissCopyConfirmation');
+  }
+
+  @override
   Future<void> muteSystemOutput() async {
     await methodChannel.invokeMethod<void>('muteSystemOutput');
   }

@@ -24,12 +24,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-  final _shadowActionSkillPlugin = ShadowActionSkill();
+  final _plugin = ShadowActionSkill();
+  final List<Future<dynamic> Function(MethodCall)> _nativeCallHandlers = [];
 
   @override
   void initState() {
     super.initState();
+    _plugin.setNativeCallHandler(_dispatchNativeCall);
     initPlatformState();
+  }
+
+  Future<dynamic> _dispatchNativeCall(MethodCall call) async {
+    for (final handler in List.of(_nativeCallHandlers)) {
+      await handler(call);
+    }
+  }
+
+  void addNativeCallHandler(Future<dynamic> Function(MethodCall) handler) {
+    _nativeCallHandlers.add(handler);
+  }
+
+  void removeNativeCallHandler(Future<dynamic> Function(MethodCall) handler) {
+    _nativeCallHandlers.remove(handler);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -38,7 +54,7 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      platformVersion = await _shadowActionSkillPlugin.getPlatformVersion() ?? 'Unknown platform version';
+      platformVersion = await _plugin.getPlatformVersion() ?? 'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -76,17 +92,33 @@ class _MyAppState extends State<MyApp> {
               child: const Text('Select Audio Device'),
             ),
             const SizedBox(height: 24),
-            const QuickAccessSection(),
+            QuickAccessSection(
+              plugin: _plugin,
+              addHandler: addNativeCallHandler,
+              removeHandler: removeNativeCallHandler,
+            ),
             const SizedBox(height: 32),
-            const SkillSearchSection(),
+            SkillSearchSection(
+              plugin: _plugin,
+              addHandler: addNativeCallHandler,
+              removeHandler: removeNativeCallHandler,
+            ),
             const SizedBox(height: 32),
-            const SkillResultSection(),
+            SkillResultSection(
+              plugin: _plugin,
+              addHandler: addNativeCallHandler,
+              removeHandler: removeNativeCallHandler,
+            ),
             const SizedBox(height: 32),
-            const AccessibilitySection(),
+            AccessibilitySection(plugin: _plugin),
             const SizedBox(height: 32),
-            const DictationSection(),
+            DictationSection(
+              plugin: _plugin,
+              addHandler: addNativeCallHandler,
+              removeHandler: removeNativeCallHandler,
+            ),
             const SizedBox(height: 32),
-            const ScreenshotSection(),
+            ScreenshotSection(plugin: _plugin),
           ],
         ),
       ),

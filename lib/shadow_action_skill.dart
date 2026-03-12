@@ -56,6 +56,7 @@ class ShadowActionSkill {
   /// **Skill Result:**
   /// - `onSkillResultAction` — `{actionId: String, text: String}`
   /// - `onSkillResultDismissed` — no args
+  /// - `onCopyConfirmationDismissed` — no args
   ///
   /// **Other:**
   /// - `onAudioDeviceSelectDismissed` — no args
@@ -150,6 +151,16 @@ class ShadowActionSkill {
   /// Dismisses the skill result overlay.
   Future<void> dismissSkillResult() {
     return ShadowActionSkillPlatform.instance.dismissSkillResult();
+  }
+
+  /// Shows the copy confirmation banner ("Copied. Paste anywhere.").
+  Future<void> showCopyConfirmation() {
+    return ShadowActionSkillPlatform.instance.showCopyConfirmation();
+  }
+
+  /// Dismisses the copy confirmation banner.
+  Future<void> dismissCopyConfirmation() {
+    return ShadowActionSkillPlatform.instance.dismissCopyConfirmation();
   }
 
   /// Mutes the system output device using the hardware mute flag.

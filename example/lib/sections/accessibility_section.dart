@@ -4,15 +4,15 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class AccessibilitySection extends StatefulWidget {
-  const AccessibilitySection({super.key});
+  const AccessibilitySection({super.key, required this.plugin});
+
+  final ShadowActionSkill plugin;
 
   @override
   State<AccessibilitySection> createState() => _AccessibilitySectionState();
 }
 
 class _AccessibilitySectionState extends State<AccessibilitySection> {
-  final _plugin = ShadowActionSkill();
-
   String _status = '';
   bool _isStatusError = false;
   bool _isPermissionGranted = false;
@@ -66,7 +66,7 @@ class _AccessibilitySectionState extends State<AccessibilitySection> {
 
   Future<void> _checkPermission() async {
     try {
-      final granted = await _plugin.checkAccessibilityPermission();
+      final granted = await widget.plugin.checkAccessibilityPermission();
       if (!mounted) return;
       setState(() {
         _isPermissionGranted = granted;
@@ -79,7 +79,7 @@ class _AccessibilitySectionState extends State<AccessibilitySection> {
 
   Future<void> _requestPermission() async {
     try {
-      final granted = await _plugin.requestAccessibilityPermission();
+      final granted = await widget.plugin.requestAccessibilityPermission();
       if (!mounted) return;
       setState(() {
         _isPermissionGranted = granted;
@@ -94,7 +94,7 @@ class _AccessibilitySectionState extends State<AccessibilitySection> {
 
   Future<void> _getClipboardContent() async {
     try {
-      final content = await _plugin.getClipboardContent();
+      final content = await widget.plugin.getClipboardContent();
       if (!mounted) return;
       setState(() {
         _clipboardContent = content ?? '(empty)';
@@ -112,7 +112,7 @@ class _AccessibilitySectionState extends State<AccessibilitySection> {
       return;
     }
     try {
-      await _plugin.setClipboardContent(text);
+      await widget.plugin.setClipboardContent(text);
       _setStatus('Clipboard set to: "$text"');
     } on PlatformException catch (e) {
       _setStatus('Failed to set clipboard: ${e.message}', isError: true);
@@ -123,7 +123,7 @@ class _AccessibilitySectionState extends State<AccessibilitySection> {
 
   Future<void> _copy({bool selectAll = false}) async {
     try {
-      final text = await _plugin.copy(selectAll: selectAll);
+      final text = await widget.plugin.copy(selectAll: selectAll);
       if (!mounted) return;
       setState(() {
         _copiedText = text;
@@ -141,7 +141,7 @@ class _AccessibilitySectionState extends State<AccessibilitySection> {
       return;
     }
     try {
-      await _plugin.paste(text);
+      await widget.plugin.paste(text);
       _setStatus('Pasted: "$text"');
     } on PlatformException catch (e) {
       _setStatus('Paste failed: ${e.message}', isError: true);
