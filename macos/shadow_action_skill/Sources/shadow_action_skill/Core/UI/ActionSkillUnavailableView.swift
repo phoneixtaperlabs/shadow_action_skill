@@ -14,6 +14,8 @@ struct ActionSkillUnavailableView: View {
 
     static let windowIdentifier = "actionSkillUnavailable"
 
+    @State private var isVisible = true
+
     // MARK: - Window Lifecycle
 
     /// Present the banner above the dock. (Cohesion — view owns its presentation config)
@@ -47,9 +49,19 @@ struct ActionSkillUnavailableView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.borderHard, lineWidth: 1)
+                .strokeBorder(Color.borderSoft, lineWidth: 1)
         }
         .clipShape(.rect(cornerRadius: 12))
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : -8)
+        .animation(.easeInOut(duration: 0.3), value: isVisible)
+        .task {
+            try? await Task.sleep(for: .seconds(2.5))
+            dismiss()
+            // Allow fade-out animation to complete before closing the window.
+            try? await Task.sleep(for: .seconds(0.35))
+            Self.dismissWindow()
+        }
     }
 
     // MARK: - Content
@@ -81,6 +93,7 @@ struct ActionSkillUnavailableView: View {
     // MARK: - Actions
 
     private func dismiss() {
+        isVisible = false
         FlutterBridge.shared.send("onActionSkillUnavailableDismissed")
     }
 }

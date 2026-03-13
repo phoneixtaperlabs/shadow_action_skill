@@ -153,4 +153,12 @@ abstract class ShadowActionSkillPlatform extends PlatformInterface {
   Future<void> dismissAudioDeviceSelect() {
     throw UnimplementedError('dismissAudioDeviceSelect() has not been implemented.');
   }
+
+  Future<void> showActionSkillUnavailable() {
+    throw UnimplementedError('showActionSkillUnavailable() has not been implemented.');
+  }
+
+  Future<void> dismissActionSkillUnavailable() {
+    throw UnimplementedError('dismissActionSkillUnavailable() has not been implemented.');
+  }
 }

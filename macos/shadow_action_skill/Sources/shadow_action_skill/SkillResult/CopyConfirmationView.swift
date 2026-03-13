@@ -86,10 +86,7 @@ struct CopyConfirmationView: View {
     // MARK: - Close Button
 
     private var closeButton: some View {
-        Button(action: {
-            dismiss()
-            Self.dismissWindow()
-        }) {
+        Button(action: dismiss) {
             Image(systemName: "xmark")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color.text4)

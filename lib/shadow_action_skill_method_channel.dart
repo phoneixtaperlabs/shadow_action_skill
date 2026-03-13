@@ -183,4 +183,14 @@ class MethodChannelShadowActionSkill extends ShadowActionSkillPlatform {
   Future<void> dismissAudioDeviceSelect() async {
     await methodChannel.invokeMethod<void>('dismissAudioDeviceSelect');
   }
+
+  @override
+  Future<void> showActionSkillUnavailable() async {
+    await methodChannel.invokeMethod<void>('showActionSkillUnavailable');
+  }
+
+  @override
+  Future<void> dismissActionSkillUnavailable() async {
+    await methodChannel.invokeMethod<void>('dismissActionSkillUnavailable');
+  }
 }

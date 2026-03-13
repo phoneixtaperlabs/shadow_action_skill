@@ -187,6 +187,33 @@ class _DictationSectionState extends State<DictationSection> {
               },
               child: const Text('Dismiss Audio Device Select'),
             ),
+            ElevatedButton(
+              onPressed: () async {
+                final deviceName = await widget.plugin.getDefaultInputDeviceName();
+                if (deviceName != null) {
+                  await widget.plugin.showDeviceNotification(deviceName);
+                }
+              },
+              child: const Text('Show Device Notification'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await widget.plugin.dismissDeviceNotification();
+              },
+              child: const Text('Dismiss Device Notification'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await widget.plugin.showActionSkillUnavailable();
+              },
+              child: const Text('Show Action Skill Unavailable'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await widget.plugin.dismissActionSkillUnavailable();
+              },
+              child: const Text('Dismiss Action Skill Unavailable'),
+            ),
           ],
         ),
         const SizedBox(height: 16),

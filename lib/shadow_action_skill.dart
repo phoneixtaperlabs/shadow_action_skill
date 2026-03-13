@@ -208,4 +208,14 @@ class ShadowActionSkill {
   Future<void> dismissAudioDeviceSelect() {
     return ShadowActionSkillPlatform.instance.dismissAudioDeviceSelect();
   }
+
+  /// Shows the action skill unavailable view.
+  Future<void> showActionSkillUnavailable() {
+    return ShadowActionSkillPlatform.instance.showActionSkillUnavailable();
+  }
+
+  /// Dismisses the action skill unavailable view.
+  Future<void> dismissActionSkillUnavailable() {
+    return ShadowActionSkillPlatform.instance.dismissActionSkillUnavailable();
+  }
 }

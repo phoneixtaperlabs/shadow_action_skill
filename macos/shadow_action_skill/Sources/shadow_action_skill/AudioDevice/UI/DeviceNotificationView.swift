@@ -50,7 +50,7 @@ struct DeviceNotificationView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.borderHard, lineWidth: 1)
+                .strokeBorder(Color.borderSoft, lineWidth: 1)
         }
     }
 }
