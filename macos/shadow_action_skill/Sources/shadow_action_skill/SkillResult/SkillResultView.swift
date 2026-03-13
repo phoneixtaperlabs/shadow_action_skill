@@ -317,7 +317,7 @@ private struct ActionBar: View {
             )
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.vertical, 5)
         .background {
             UnevenRoundedRectangle(bottomLeadingRadius: 12, bottomTrailingRadius: 12)
                 .fill(Color.backgroundMedium)
@@ -350,7 +350,7 @@ private struct ActionButton: View {
                 ShortcutKeyCaps(shortcut: shortcut)
             }
             .padding(.horizontal, 6)
-            .padding(.vertical, 6)
+            .padding(.vertical, 2)
             .background {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(isHovered ? Color.backgroundSoft : Color.clear)
