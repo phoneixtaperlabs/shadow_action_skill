@@ -5,12 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shadow_action_skill/shadow_action_skill.dart';
 
 class SkillResultSection extends StatefulWidget {
-  const SkillResultSection({
-    super.key,
-    required this.plugin,
-    required this.addHandler,
-    required this.removeHandler,
-  });
+  const SkillResultSection({super.key, required this.plugin, required this.addHandler, required this.removeHandler});
 
   final ShadowActionSkill plugin;
   final void Function(Future<dynamic> Function(MethodCall)) addHandler;
@@ -100,6 +95,10 @@ class _SkillResultSectionState extends State<SkillResultSection> {
           resultText:
               "Hi there! I'm Jay and I'm testing out Shadow's newest "
               "feature right now and it seems pretty cool! ",
+          // "Hi there! I'm Jay and I'm testing out Shadow's newest "
+          // "Hi there! I'm Jay and I'm testing out Shadow's newest "
+          // "Hi there! I'm Jay and I'm testing out Shadow's newest "
+          // "feature right now and it seems pretty cool! ",
           contexts: [
             SkillResultContext(type: 'sfSymbol', value: 'waveform', name: 'Microphone', iconBytes: micBytes),
             SkillResultContext(type: 'sfSymbol', value: 'display', name: 'Screen', iconBytes: screenBytes),

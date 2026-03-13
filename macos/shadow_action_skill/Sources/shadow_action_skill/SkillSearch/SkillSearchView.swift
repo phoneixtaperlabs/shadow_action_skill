@@ -45,10 +45,10 @@ struct SkillSearchView: View {
     var body: some View {
         VStack(spacing: 0) {
             SearchField(text: $viewModel.searchText)
-                .padding(12)
+                .padding(8)
 
             Divider()
-                .background(Color.borderHard)
+                .background(Color.borderSoft)
 
             ScrollView {
                 LazyVStack(spacing: 0) {
@@ -60,6 +60,8 @@ struct SkillSearchView: View {
                 }
             }
             .frame(maxHeight: 300)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
         }
         .frame(width: 500)
         .background {
@@ -68,7 +70,7 @@ struct SkillSearchView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.borderHard, lineWidth: 1)
+                .strokeBorder(Color.borderSoft, lineWidth: 1)
         }
     }
 }
@@ -112,10 +114,10 @@ private struct SkillSearchRow: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 skillIcon
-                    .frame(width: 28)
+                    .frame(width: 18)
 
                 Text(skill.name)
-                    .font(.system(size: 15))
+                    .font(.system(size: 14, weight: .light))
                     .foregroundStyle(Color.text1)
 
                 Spacer()
@@ -140,10 +142,10 @@ private struct SkillSearchRow: View {
             Image(nsImage: nsImage)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 20, height: 20)
+                .frame(width: 18, height: 18)
         } else if let icon = skill.icon {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .medium))
+                .font(.system(size: 18, weight: .light))
                 .foregroundStyle(Color.text2)
         }
     }

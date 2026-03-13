@@ -44,16 +44,21 @@ struct SkillResultView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TopBar(
-                skillName: viewModel.skillResult.skillName,
-                skillIcon: viewModel.skillResult.skillIcon,
-                skillIconBytes: viewModel.skillResult.skillIconBytes,
-                onDismiss: { viewModel.dismiss() }
-            )
+            VStack(spacing: 8) {
+                TopBar(
+                    skillName: viewModel.skillResult.skillName,
+                    skillIcon: viewModel.skillResult.skillIcon,
+                    skillIconBytes: viewModel.skillResult.skillIconBytes,
+                    onDismiss: { viewModel.dismiss() }
+                )
 
-            ResultBody(text: viewModel.skillResult.resultText)
+                ResultBody(text: viewModel.skillResult.resultText)
 
-            ContextIconsRow(contexts: viewModel.skillResult.contexts)
+                ContextIconsRow(contexts: viewModel.skillResult.contexts)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 4)
+
 
             Divider()
                 .background(Color.borderHard)
@@ -62,16 +67,17 @@ struct SkillResultView: View {
                 viewModel.selectAction(actionId)
             }
         }
-        .frame(width: 600)
+        .frame(width: 450)
         .coordinateSpace(name: "skillResultPanel")
         .background {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.backgroundHard)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(Color.borderHard, lineWidth: 1)
-                }
         }
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.borderSoft, lineWidth: 1)
+        }
+        .clipShape(.rect(cornerRadius: 12))
     }
 }
 
@@ -87,8 +93,6 @@ private struct TopBar: View {
     let skillIconBytes: Data?
     let onDismiss: () -> Void
 
-    @State private var isDismissHovered = false
-
     var body: some View {
         HStack {
             skillIconView
@@ -99,21 +103,9 @@ private struct TopBar: View {
 
             Spacer()
 
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.text4)
-                    .frame(width: 24, height: 24)
-                    .background {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(isDismissHovered ? Color.backgroundSoft : Color.clear)
-                    }
-            }
-            .buttonStyle(.plain)
-            .onHover { isDismissHovered = $0 }
+            CloseButton(action: onDismiss)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.top, 8)
     }
 
     @ViewBuilder
@@ -143,11 +135,9 @@ private struct ResultBody: View {
     var body: some View {
         ScrollView {
             Text(text)
-                .font(.system(size: 15))
+                .font(.system(size: 14))
                 .foregroundStyle(Color.text1)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
         }
         .frame(maxHeight: 200)
     }
@@ -163,17 +153,29 @@ private struct ContextIconsRow: View {
 
     let contexts: [SkillResultContext]
 
+    @State private var panelWidth: CGFloat = 0
+
     var body: some View {
         if !contexts.isEmpty {
-            HStack(spacing: 8) {
-                Spacer()
+            contextIcons
+        }
+    }
 
-                ForEach(contexts) { context in
-                    ContextIconItem(context: context)
-                }
+    private var contextIcons: some View {
+        HStack(spacing: 8) {
+            Spacer()
+
+            ForEach(contexts) { context in
+                ContextIconItem(context: context, panelWidth: panelWidth)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 10)
+        }
+        .padding(.bottom, 10)
+        .coordinateSpace(name: "contextIconsRow")
+        .background {
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear { panelWidth = geo.size.width }
+            }
         }
     }
 }
@@ -188,13 +190,11 @@ private struct ContextIconsRow: View {
 private struct ContextIconItem: View {
 
     let context: SkillResultContext
+    let panelWidth: CGFloat
 
     @State private var isHovered = false
     @State private var iconMidX: CGFloat = 0
     @State private var tooltipWidth: CGFloat = 0
-
-    /// Panel width constant — must match the `.frame(width:)` on `SkillResultView`.
-    private let panelWidth: CGFloat = 600
 
     var body: some View {
         iconView
@@ -203,7 +203,7 @@ private struct ContextIconItem: View {
                 GeometryReader { geo in
                     Color.clear
                         .onAppear {
-                            iconMidX = geo.frame(in: .named("skillResultPanel")).midX
+                            iconMidX = geo.frame(in: .named("contextIconsRow")).midX
                         }
                 }
             }
@@ -228,7 +228,7 @@ private struct ContextIconItem: View {
     private var tooltipOffsetX: CGFloat {
         let halfTooltip = tooltipWidth / 2
         let rightEdge = iconMidX + halfTooltip
-        let panelInset: CGFloat = 12
+        let panelInset: CGFloat = 0
 
         if rightEdge > panelWidth - panelInset {
             return -(rightEdge - (panelWidth - panelInset))
@@ -250,7 +250,7 @@ private struct ContextIconItem: View {
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 6)
-                    .strokeBorder(Color.borderHard, lineWidth: 1)
+                    .strokeBorder(Color.borderSoft, lineWidth: 1)
             }
     }
 
@@ -292,7 +292,7 @@ private struct ActionBar: View {
     let onAction: (String) -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 6) {
             Spacer()
 
             ActionButton(
@@ -316,7 +316,7 @@ private struct ActionBar: View {
                 onAction: onAction
             )
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background {
             UnevenRoundedRectangle(bottomLeadingRadius: 12, bottomTrailingRadius: 12)
@@ -341,15 +341,15 @@ private struct ActionButton: View {
 
     var body: some View {
         Button { onAction(actionId) } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Text(label)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.text3)
+                    .font(.system(size: 11, weight: .light))
+                    .foregroundStyle(isHovered ? Color.text0 :Color.text3)
                     .lineLimit(1)
 
                 ShortcutKeyCaps(shortcut: shortcut)
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 6)
             .padding(.vertical, 6)
             .background {
                 RoundedRectangle(cornerRadius: 8)
@@ -375,10 +375,10 @@ private struct ShortcutKeyCaps: View {
         HStack(spacing: 4) {
             ForEach(Array(shortcut.enumerated()), id: \.offset) { _, char in
                 Text(String(char))
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(Color.text4)
                     .frame(minWidth: 22, minHeight: 22)
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 2)
                     .background {
                         RoundedRectangle(cornerRadius: 6)
                             .fill(Color.backgroundSoft)

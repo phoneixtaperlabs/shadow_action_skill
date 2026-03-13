@@ -47,7 +47,7 @@ struct DictationFailView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.borderHard, lineWidth: 1)
+                .strokeBorder(Color.borderSoft, lineWidth: 1)
         }
         .clipShape(.rect(cornerRadius: 12))
     }
@@ -73,18 +73,9 @@ struct DictationFailView: View {
         .padding(.bottom, 20)
     }
 
-    // MARK: - Close Button
-
     private var closeButton: some View {
-        Button(action: close) {
-            Image(systemName: "xmark")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(Color.text4)
-                .frame(width: 24, height: 24)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .padding(8)
+        CloseButton(action: close)
+            .padding(.top, 12)
     }
 
     // MARK: - Actions

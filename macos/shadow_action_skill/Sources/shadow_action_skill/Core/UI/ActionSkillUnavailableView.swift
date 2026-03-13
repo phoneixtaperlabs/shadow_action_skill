@@ -76,18 +76,9 @@ struct ActionSkillUnavailableView: View {
             .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Close Button
-
     private var closeButton: some View {
-        Button(action: dismiss) {
-            Image(systemName: "xmark")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.text4)
-                .frame(width: 24, height: 24)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .padding(8)
+        CloseButton(action: dismiss)
+            .padding(8)
     }
 
     // MARK: - Actions

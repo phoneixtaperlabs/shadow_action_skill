@@ -44,7 +44,7 @@ struct DictationView: View {
         }
         .overlay {
             Capsule()
-                .strokeBorder(Color.borderHard, lineWidth: 1)
+                .strokeBorder(Color.borderSoft, lineWidth: 1)
         }
         .onAppear {
             WindowManager.shared.dictationViewModel = viewModel

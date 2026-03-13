@@ -101,7 +101,7 @@ private struct SkillTile: View {
                 .padding(6)
 
                 Text(skill.key)
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .font(.system(size: 13, weight: .light, design: .default))
                     .foregroundStyle(Color.brandPrimary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .padding(5)
@@ -113,7 +113,7 @@ private struct SkillTile: View {
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.borderHard, lineWidth: 1)
+                    .strokeBorder(Color.borderSoft, lineWidth: 1.3)
             }
         }
         .buttonStyle(.plain)
