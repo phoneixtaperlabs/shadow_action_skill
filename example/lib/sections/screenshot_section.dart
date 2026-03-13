@@ -35,7 +35,7 @@ class _ScreenshotSectionState extends State<ScreenshotSection> {
     });
     try {
       // Show glow overlay and capture screenshot simultaneously
-      final results = await Future.wait([widget.plugin.showGlowOverlay(), widget.plugin.captureScreenshot(quality: _quality)]);
+      final results = await Future.wait([widget.plugin.showGlowOverlay(), widget.plugin.captureScreenshot(userUID: 'test-user', quality: _quality)]);
       final screenshotResult = results[1] as Map<String, dynamic>;
 
       debugPrint("screenshotResult : $screenshotResult");

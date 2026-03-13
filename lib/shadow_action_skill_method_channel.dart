@@ -69,10 +69,10 @@ class MethodChannelShadowActionSkill extends ShadowActionSkillPlatform {
   }
 
   @override
-  Future<Map<String, dynamic>> captureScreenshot({double quality = 0.8, String? fileName}) async {
+  Future<Map<String, dynamic>> captureScreenshot({required String userUID, double quality = 0.8, String? fileName}) async {
     final result = await methodChannel.invokeMapMethod<String, dynamic>(
       'captureScreenshot',
-      {'quality': quality, if (fileName != null) 'fileName': fileName},
+      {'userUID': userUID, 'quality': quality, if (fileName != null) 'fileName': fileName},
     );
     return result!;
   }

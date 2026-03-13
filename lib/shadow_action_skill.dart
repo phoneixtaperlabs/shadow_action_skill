@@ -100,8 +100,8 @@ class ShadowActionSkill {
   /// Captures a screenshot of the current screen.
   ///
   /// Returns `{filePath: String, timestamp: int}`.
-  Future<Map<String, dynamic>> captureScreenshot({double quality = 0.8, String? fileName}) {
-    return ShadowActionSkillPlatform.instance.captureScreenshot(quality: quality, fileName: fileName);
+  Future<Map<String, dynamic>> captureScreenshot({required String userUID, double quality = 0.8, String? fileName}) {
+    return ShadowActionSkillPlatform.instance.captureScreenshot(userUID: userUID, quality: quality, fileName: fileName);
   }
 
   /// Shows the glow overlay effect.

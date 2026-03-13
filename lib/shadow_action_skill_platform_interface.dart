@@ -68,7 +68,7 @@ abstract class ShadowActionSkillPlatform extends PlatformInterface {
     throw UnimplementedError('paste() has not been implemented.');
   }
 
-  Future<Map<String, dynamic>> captureScreenshot({double quality = 0.8, String? fileName}) {
+  Future<Map<String, dynamic>> captureScreenshot({required String userUID, double quality = 0.8, String? fileName}) {
     throw UnimplementedError('captureScreenshot() has not been implemented.');
   }
 

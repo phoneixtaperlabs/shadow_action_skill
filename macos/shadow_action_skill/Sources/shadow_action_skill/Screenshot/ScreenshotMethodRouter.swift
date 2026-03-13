@@ -20,11 +20,15 @@ enum ScreenshotMethodRouter {
         switch call.method {
         case "captureScreenshot":
             let args = call.arguments as? [String: Any]
+            guard let userUID = args?["userUID"] as? String else {
+                result(FlutterError(code: "MISSING_USER_UID", message: "userUID is required", details: nil))
+                return
+            }
             let quality = args?["quality"] as? Double ?? 0.8
             let fileName = args?["fileName"] as? String
             Task {
                 do {
-                    let screenshot = try await ScreenshotService.captureScreenshot(quality: quality, fileName: fileName)
+                    let screenshot = try await ScreenshotService.captureScreenshot(userUID: userUID, quality: quality, fileName: fileName)
                     result(screenshot.toMap())
                 } catch {
                     result(flutterError(from: error))

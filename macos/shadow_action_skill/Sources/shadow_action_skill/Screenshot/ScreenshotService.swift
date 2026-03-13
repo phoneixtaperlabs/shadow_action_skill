@@ -36,17 +36,25 @@ enum ScreenshotService {
 
     private static let logger = Logger(subsystem: "shadow_action_skill", category: "Screenshot")
 
-    /// Directory for screenshot output files.
-    private static let outputDirectory: URL = {
+    /// Base directory for the app's support files.
+    private static let appSupportBase: URL = {
         FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/com.taperlabs.shadow", isDirectory: true)
     }()
+
+    /// Returns the screenshot output directory for a given user.
+    private static func outputDirectory(userUID: String) -> URL {
+        appSupportBase
+            .appendingPathComponent(userUID, isDirectory: true)
+            .appendingPathComponent("skills/screenshots", isDirectory: true)
+    }
 
     // MARK: - Public API
 
     /// Captures the main display and writes the screenshot as a JPEG file.
     ///
     /// - Parameters:
+    ///   - userUID: The user's unique identifier, used to scope the output directory.
     ///   - quality: JPEG compression quality from 0.0 (max compression) to 1.0 (best quality).
     ///     Defaults to `0.8`.
     ///   - fileName: Optional custom file name (e.g. `"capture.jpg"`).
@@ -54,12 +62,13 @@ enum ScreenshotService {
     /// - Returns: A `ScreenshotResult` with the file path and capture timestamp.
     /// - Throws: `ScreenshotError` if any step fails.
     static func captureScreenshot(
+        userUID: String,
         quality: Double = 0.8,
         fileName: String? = nil
     ) async throws(ScreenshotError) -> ScreenshotResult {
         let cgImage = try await captureDisplay()
         let jpegData = try encodeJPEG(cgImage, quality: quality)
-        return try persistToFile(jpegData, fileName: fileName)
+        return try persistToFile(jpegData, userUID: userUID, fileName: fileName)
     }
 
     // MARK: - Private Helpers
@@ -126,13 +135,16 @@ enum ScreenshotService {
     ///
     /// - Parameters:
     ///   - data: The JPEG data to persist.
+    ///   - userUID: The user's unique identifier.
     ///   - fileName: Custom file name, or `nil` to use `screenshot_<timestamp>.jpg`.
     private static func persistToFile(
         _ data: Data,
+        userUID: String,
         fileName: String?
     ) throws(ScreenshotError) -> ScreenshotResult {
+        let outputDir = outputDirectory(userUID: userUID)
         do {
-            try FileManager.default.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
         } catch {
             logger.error("[Screenshot] Failed to create output directory: \(error.localizedDescription)")
             throw .fileWriteFailed(underlying: error)
@@ -140,7 +152,7 @@ enum ScreenshotService {
 
         let timestamp = Int(Date().timeIntervalSince1970)
         let resolvedName = fileName ?? "screenshot_\(timestamp).jpg"
-        let fileURL = outputDirectory.appendingPathComponent(resolvedName)
+        let fileURL = outputDir.appendingPathComponent(resolvedName)
 
         do {
             try data.write(to: fileURL, options: .atomic)
