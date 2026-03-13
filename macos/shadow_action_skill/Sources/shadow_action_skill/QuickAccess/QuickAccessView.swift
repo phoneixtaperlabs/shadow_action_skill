@@ -102,7 +102,7 @@ private struct SkillTile: View {
 
                 Text(skill.key)
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.text4)
+                    .foregroundStyle(Color.brandPrimary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .padding(5)
             }
